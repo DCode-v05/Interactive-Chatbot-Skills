@@ -68,6 +68,14 @@ function runBuild(call: ToolCall): ExecuteResult {
   }
   for (const r of skill.reminders) reminders.push(r);
 
+  reminders.push(
+    `CLICK TARGET: every widget needs at least one. ` +
+      (skill.intent === "source_cards"
+        ? `Use <a href="..." target="_blank" rel="noopener"> on each citation card.`
+        : `Use data-bap-prompt="..." on the natural target ` +
+          `(button / row / card / SVG node / table cell).`),
+  );
+
   if (reminders.length > 0) {
     lines.push(`reminders:`);
     for (const r of reminders) lines.push(`  - ${r}`);

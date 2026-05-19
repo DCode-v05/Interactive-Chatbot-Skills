@@ -11,4 +11,4 @@ keywords:
   - radial
 ---
 
-Inline SVG. Central node + 4–6 radial branches, one level deep.
+Inline SVG. Central node + 4–6 radial branches, one level deep. Each branch end-node (the `<circle>` or `<g>` wrapping label + node) is clickable — add `data-bap-prompt="Expand: <branch name>"` and `style="cursor:pointer"`.

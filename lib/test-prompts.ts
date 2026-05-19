@@ -39,6 +39,14 @@ export const TEST_PROMPTS: PromptGroup[] = [
     ],
   },
   {
+    kind: "timeline",
+    label: "Timeline",
+    prompts: [
+      "Show the history of OpenAI as a timeline",
+      "Timeline of major web framework releases since 2010",
+    ],
+  },
+  {
     kind: "checklist",
     label: "Checklist",
     prompts: [
@@ -71,6 +79,30 @@ export const TEST_PROMPTS: PromptGroup[] = [
     ],
   },
   {
+    kind: "scatter_plot",
+    label: "Scatter plot",
+    prompts: [
+      "Scatter plot of revenue vs ad spend for the top 20 marketing campaigns",
+      "Plot hours studied vs exam score for a class of 25",
+    ],
+  },
+  {
+    kind: "funnel_chart",
+    label: "Funnel",
+    prompts: [
+      "Funnel chart: signups → activated → paying → renewed",
+      "Show the e-commerce conversion funnel for last month",
+    ],
+  },
+  {
+    kind: "radar_chart",
+    label: "Radar",
+    prompts: [
+      "Radar chart comparing Slack vs Teams vs Discord on 5 traits",
+      "Compare myself to a senior engineer across 5 skill dimensions",
+    ],
+  },
+  {
     kind: "code_block",
     label: "Code",
     prompts: [
@@ -92,6 +124,30 @@ export const TEST_PROMPTS: PromptGroup[] = [
     prompts: [
       "Draw a flowchart for handling a customer refund request",
       "Show the CI/CD pipeline flow for a typical PR merge",
+    ],
+  },
+  {
+    kind: "sequence_diagram",
+    label: "Sequence diagram",
+    prompts: [
+      "Sequence diagram: browser, app server, and auth server during OAuth login",
+      "Trace the API call flow for placing an e-commerce order",
+    ],
+  },
+  {
+    kind: "tree_diagram",
+    label: "Tree diagram",
+    prompts: [
+      "Show an engineering org as a tree — CTO at the top, 3 directors, then teams",
+      "Tree diagram of file types in a typical Next.js project",
+    ],
+  },
+  {
+    kind: "gantt_chart",
+    label: "Gantt",
+    prompts: [
+      "Plan a 12-week product launch as a Gantt chart",
+      "Gantt of a database migration — schema, backfill, cutover, validation",
     ],
   },
   {
@@ -151,6 +207,14 @@ export const TEST_PROMPTS: PromptGroup[] = [
     ],
   },
   {
+    kind: "pricing_table",
+    label: "Pricing",
+    prompts: [
+      "Design a 3-tier pricing page for a SaaS analytics product",
+      "Show Free / Pro / Enterprise pricing for a project management tool",
+    ],
+  },
+  {
     kind: "calculator",
     label: "Calculator (live)",
     prompts: [
@@ -164,6 +228,22 @@ export const TEST_PROMPTS: PromptGroup[] = [
     prompts: [
       "Make a 3-question quiz about HTTP status codes",
       "Quick quiz on basic React hooks — 4 questions, multiple choice",
+    ],
+  },
+  {
+    kind: "form",
+    label: "Form",
+    prompts: [
+      "Show me a user signup form with name, email, password, and role",
+      "Build a 3-field contact form for a SaaS landing page",
+    ],
+  },
+  {
+    kind: "map",
+    label: "Map",
+    prompts: [
+      "Show me a map of 6 fictional office locations across Europe",
+      "Itinerary map: NYC → London → Paris → Berlin",
     ],
   },
 ];

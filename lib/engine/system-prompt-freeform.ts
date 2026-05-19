@@ -24,13 +24,15 @@ build_widget(intent)  →  compose HTML  →  submit_widget(intent, html, prose?
 
 # SKILL CATALOG (pick ONE)
 
-**Static:** \`chips\` · \`decision_card\` · \`confirm_card\` · \`stepper\` · \`checklist\` · \`timeline\` (dated events) · \`table\` · \`chart\` (SVG bar/line/area) · \`source_cards\` (only widget with \`<a href>\`) · \`code_block\` · \`inline_banner\`
+**Static:** \`chips\` · \`decision_card\` · \`confirm_card\` · \`stepper\` · \`checklist\` · \`timeline\` (dated events) · \`table\` · \`chart\` (SVG bar/line/area) · \`source_cards\` (only widget with \`<a href>\`) · \`code_block\` · \`inline_banner\` · \`form\` (visual-only fields + data-bap-prompt submit — NOT a real \`<form>\`)
 
-**Diagrams (inline SVG):** \`flowchart\` · \`venn_diagram\` · \`mind_map\`
+**Diagrams (inline SVG):** \`flowchart\` · \`venn_diagram\` · \`mind_map\` · \`sequence_diagram\` (actor lifelines + time-ordered arrows) · \`tree_diagram\` (top-down hierarchy) · \`gantt_chart\` (project schedule with overlapping task bars)
 
-**Charts (inline SVG):** \`pie_chart\` · \`heatmap\`
+**Charts (inline SVG):** \`pie_chart\` · \`heatmap\` · \`scatter_plot\` (XY correlation) · \`funnel_chart\` (conversion drop-off) · \`radar_chart\` (multi-axis comparison)
 
 **Dashboards:** \`kpi_dashboard\` · \`profile_card\` · \`kanban_board\` (static) · \`pricing_table\` (tiered plans)
+
+**Spatial:** \`map\` (stylized region SVG + approximate location pins)
 
 **Interactive (use \`<script>\` ± \`<form>\`):** \`calculator\` · \`quiz\`
 
@@ -46,7 +48,9 @@ Sentinels are exact. ONE block per response.
 
 # INTERACTIVITY — \`data-bap-prompt\` (chat continuation)
 
-ANY element with \`data-bap-prompt="follow-up message"\` becomes a click target. When the user clicks it, the chat sends "follow-up message" as their next prompt. The host's global click delegator handles this — works on \`<button>\`, \`<span>\`, \`<a>\`, \`<div>\`, anything. Style determines how it LOOKS clickable.
+ANY element with \`data-bap-prompt="follow-up message"\` becomes a click target. When the user clicks it, the chat sends "follow-up message" as their next prompt. The host's global click delegator handles this — works on \`<button>\`, \`<span>\`, \`<a>\`, \`<div>\`, SVG \`<rect>\`/\`<circle>\`/\`<path>\`/\`<g>\`, \`<td>\`, \`<li>\`, anything. Style determines how it LOOKS clickable.
+
+**EVERY widget MUST have at least one click target.** Most widgets use \`data-bap-prompt\` on a clear element (button, row, card, SVG node, table cell). \`source_cards\` is the only widget that uses \`<a href target="_blank" rel="noopener">\` instead — for opening external citations in a new tab. Static read-only widgets are NOT acceptable; the validator will reject a submit that has neither a \`data-bap-prompt\` nor an external anchor.
 
 **Three patterns — use whichever fits:**
 
@@ -61,14 +65,21 @@ ANY element with \`data-bap-prompt="follow-up message"\` becomes a click target.
    \`\`\`
    Visual signature: accent color + dashed bottom border + \`cursor:pointer\`. Reads as a "you can dive deeper here" affordance without breaking reading flow. Use 1–4 inline keywords per response — more is noisy.
 
-3. **Card / row click target** (e.g. a list of options, each whole card clickable)
+3. **Card / row / cell / node click target** — the WHOLE element fires the prompt. Use this for repeating units: list items, table rows, KPI tiles, kanban cards, SVG bars / slices / nodes, heatmap cells, timeline events. Always pair with \`cursor:pointer\`. Examples:
    \`\`\`html
    <div data-bap-prompt="Plan a Q3 launch" style="background:#16181f;border:1px solid #333;border-radius:12px;padding:14px;cursor:pointer">…</div>
+   <tr data-bap-prompt="Tell me more about: PostgreSQL" style="cursor:pointer"><td>…</td></tr>
+   <li data-bap-prompt="Help me with: deploy step" style="cursor:pointer">✓ Deploy</li>
+   <rect data-bap-prompt="What's the data for Jan?" x="20" y="120" width="60" height="80" fill="#EC3B4A" style="cursor:pointer"/>
+   <path data-bap-prompt="Show details for: Slice A" d="…" fill="#EC3B4A" style="cursor:pointer"/>
+   <td data-bap-prompt="Show data for Mon at 09:00" style="background:rgba(236,59,74,0.6);cursor:pointer"></td>
    \`\`\`
 
 **For destructive actions** (delete, send, publish), ALSO add \`data-bap-confirm\` — the host shows a confirm dialog before firing.
 
-\`<a href>\` is only allowed in the \`source_cards\` widget — for any other "click to do X" use \`data-bap-prompt\` instead.
+**Pure utility buttons** (e.g. a clipboard Copy button) MAY exist without \`data-bap-prompt\` — they handle their action in-script and don't continue the chat. They do NOT count toward the "at least one click target" rule, so pair them with a separate \`data-bap-prompt\` somewhere in the widget.
+
+\`<a href>\` is only allowed in the \`source_cards\` widget, where every card MUST carry \`target="_blank" rel="noopener"\` so citations open in a new tab. For any other "click to do X" use \`data-bap-prompt\` instead.
 
 # HARD CONSTRAINTS (sanitizer strips violations)
 

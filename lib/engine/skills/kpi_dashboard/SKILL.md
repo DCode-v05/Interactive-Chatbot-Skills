@@ -12,4 +12,4 @@ keywords:
   - analytics
 ---
 
-Metric tile grid: big number + label + delta + optional inline sparkline.
+Metric tile grid: big number + label + delta + optional inline sparkline. Each tile is clickable — add `data-bap-prompt="Drill into: <metric name>"` and `cursor:pointer` on every tile's outer wrapper so the user can drill into any KPI.

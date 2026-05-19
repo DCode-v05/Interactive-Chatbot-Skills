@@ -21,7 +21,7 @@ const FORM_METHOD_RE = /<form\b[^>]*\smethod\s*=/i;
 const NETWORK_RE = /\b(fetch|XMLHttpRequest|navigator\.sendBeacon|new\s+EventSource|new\s+WebSocket)\s*\(/;
 const DYNAMIC_CODE_RE = /\b(eval|new\s+Function|document\.write|setTimeout\s*\(\s*['"`]|setInterval\s*\(\s*['"`])/;
 
-const MAX_WIDGET_BYTES = 12_000;
+const MAX_WIDGET_BYTES = 20_000;
 
 export function validateWidget(html: string): ValidationResult {
   const issues: string[] = [];
@@ -79,7 +79,20 @@ export function validateWidget(html: string): ValidationResult {
     issues.push(`Widget HTML is ${inner.length} bytes (max ${MAX_WIDGET_BYTES}). Trim styles or content.`);
   }
 
-  // Tag balance: void/SVG-leaf elements may omit closes; non-void must match.
+  const hasPromptTarget = /data-bap-prompt\s*=/i.test(inner);
+  const hasExternalAnchor = /<a\b[^>]*\bhref\s*=[^>]*\btarget\s*=\s*["']_blank/i.test(inner);
+  if (!hasPromptTarget && !hasExternalAnchor) {
+    issues.push(
+      `Widget has no click target. Every widget must have at least one ` +
+        `\`data-bap-prompt="..."\` element (for follow-up) OR — only for source_cards — ` +
+        `an \`<a href ... target="_blank" rel="noopener">\` link.`,
+    );
+  }
+
+  // Tag balance — stack-based scan, so we can point at the SPECIFIC unclosed
+  // tag (byte offset + verbatim opening snippet) rather than just "N opens
+  // vs M closes" which the model can't act on. Void/SVG-leaf elements are
+  // counted leniently (open without close is OK; close without open is not).
   const VOID_OR_LEAF = new Set([
     "area", "base", "br", "col", "embed", "hr", "img", "input", "link",
     "meta", "source", "track", "wbr",
@@ -87,36 +100,69 @@ export function validateWidget(html: string): ValidationResult {
     "stop", "use", "image",
   ]);
   const tagRe = /<(\/?)(\w+)(?:\s[^>]*?)?(\s*\/)?>/gi;
-  const openCounts = new Map<string, number>();
-  const closeCounts = new Map<string, number>();
+
+  type OpenFrame = { name: string; index: number; snippet: string };
+  const stack: OpenFrame[] = [];
+  const balanceIssues: string[] = [];
+  const voidOpens = new Map<string, number>();
+  const voidCloses = new Map<string, number>();
+
   for (const m of inner.matchAll(tagRe)) {
     const isClose = m[1] === "/";
     const name = m[2].toLowerCase();
     const isSelfClose = !!m[3];
-    if (isClose) {
-      closeCounts.set(name, (closeCounts.get(name) ?? 0) + 1);
-    } else if (!isSelfClose) {
-      openCounts.set(name, (openCounts.get(name) ?? 0) + 1);
-    }
-  }
-  const balanceIssues: string[] = [];
-  const allNames = new Set([...openCounts.keys(), ...closeCounts.keys()]);
-  for (const name of allNames) {
-    const opens = openCounts.get(name) ?? 0;
-    const closes = closeCounts.get(name) ?? 0;
+    const at = m.index ?? 0;
+
     if (VOID_OR_LEAF.has(name)) {
-      if (closes > opens) {
-        balanceIssues.push(`<${name}>: ${closes} </${name}> with only ${opens} <${name}> open(s)`);
+      if (isClose) voidCloses.set(name, (voidCloses.get(name) ?? 0) + 1);
+      else if (!isSelfClose) voidOpens.set(name, (voidOpens.get(name) ?? 0) + 1);
+      continue;
+    }
+    if (isSelfClose) continue;
+
+    if (!isClose) {
+      stack.push({ name, index: at, snippet: m[0].slice(0, 80) });
+    } else {
+      let found = -1;
+      for (let i = stack.length - 1; i >= 0; i--) {
+        if (stack[i].name === name) { found = i; break; }
       }
-    } else if (opens !== closes) {
-      balanceIssues.push(`<${name}>: ${opens} open vs ${closes} close`);
+      if (found === -1) {
+        balanceIssues.push(
+          `</${name}> at byte ${at} has no matching <${name}> open.`,
+        );
+      } else {
+        for (let i = stack.length - 1; i > found; i--) {
+          const e = stack[i];
+          balanceIssues.push(
+            `<${e.name}> opened at byte ${e.index} (\`${e.snippet}\`) ` +
+              `not closed before </${name}> at byte ${at}.`,
+          );
+        }
+        stack.length = found;
+      }
     }
   }
+  for (const e of stack) {
+    balanceIssues.push(
+      `<${e.name}> opened at byte ${e.index} (\`${e.snippet}\`) was never closed. ` +
+        `Add a matching </${e.name}> before the closing sentinel.`,
+    );
+  }
+  for (const name of voidCloses.keys()) {
+    const closes = voidCloses.get(name) ?? 0;
+    const opens = voidOpens.get(name) ?? 0;
+    if (closes > opens) {
+      balanceIssues.push(
+        `<${name}>: ${closes} </${name}> with only ${opens} <${name}> open(s).`,
+      );
+    }
+  }
+
   if (balanceIssues.length > 0) {
     issues.push(
-      `Tag balance off — ` + balanceIssues.slice(0, 4).join("; ") +
-        (balanceIssues.length > 4 ? `; …(+${balanceIssues.length - 4} more)` : "") +
-        `. Close every non-void tag exactly once.`,
+      `Tag balance off — ` + balanceIssues.slice(0, 4).join(" ") +
+        (balanceIssues.length > 4 ? ` (+${balanceIssues.length - 4} more)` : ""),
     );
   }
 

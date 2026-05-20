@@ -1,0 +1,9 @@
+# Sample widget — `chips`
+
+Worked example. The loader extracts the fenced HTML block as the skill's reference widget; structural rules in `lib/engine/tools/validate.ts` (contrast, click-target, tag balance, byte cap) must all pass.
+
+```html
+<div style="background:#1b1f2a;color:#e7eaf3;padding:14px 16px;border-radius:14px;display:flex;flex-wrap:wrap;gap:8px;font-family:ui-sans-serif">
+  <button data-bap-prompt="Tell me more" style="background:#262c3a;color:#e7eaf3;border:1px solid #353c4d;border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer">Tell me more</button>
+</div>
+```

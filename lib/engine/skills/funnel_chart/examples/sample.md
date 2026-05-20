@@ -1,0 +1,17 @@
+# Sample widget — `funnel_chart`
+
+Worked example. The loader extracts the fenced HTML block as the skill's reference widget; structural rules in `lib/engine/tools/validate.ts` (contrast, click-target, tag balance, byte cap) must all pass.
+
+```html
+<div style="background:#0f1116;color:#e6e6e6;border-radius:14px;padding:22px;font-family:ui-sans-serif">
+  <h3 style="margin:0 0 14px;font-size:16px">Conversion funnel · last 30 days</h3>
+  <svg viewBox="0 0 480 280" style="width:100%">
+    <polygon data-bap-prompt="Drill into: Signups" points="40,20 440,20 400,80 80,80" fill="#EC3B4A" style="cursor:pointer"/>
+    <text x="240" y="58" fill="#fff" font-size="13" text-anchor="middle" font-weight="700">Signups · 10,000</text>
+    <polygon data-bap-prompt="Drill into: Activated" points="80,90 400,90 360,150 120,150" fill="#ef6f7c" style="cursor:pointer"/>
+    <text x="240" y="128" fill="#fff" font-size="12" text-anchor="middle">Activated · 6,200 (62%)</text>
+    <polygon data-bap-prompt="Drill into: Paying" points="120,160 360,160 320,220 160,220" fill="#888" style="cursor:pointer"/>
+    <text x="240" y="198" fill="#fff" font-size="12" text-anchor="middle">Paying · 1,400 (14%)</text>
+  </svg>
+</div>
+```

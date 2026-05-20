@@ -1,0 +1,29 @@
+# Sample widget — `form`
+
+Worked example. The loader extracts the fenced HTML block as the skill's reference widget; structural rules in `lib/engine/tools/validate.ts` (contrast, click-target, tag balance, byte cap) must all pass.
+
+```html
+<div style="background:#fdfcf8;color:#1a1a1a;border-radius:14px;padding:22px;font-family:ui-sans-serif;max-width:420px">
+  <div style="font-weight:700;font-size:16px;margin:0 0 4px">Sign up</div>
+  <div style="font-size:12px;color:#666;margin-bottom:16px">Takes about a minute.</div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div>
+      <div style="font-size:12px;margin-bottom:4px">Name</div>
+      <input type="text" placeholder="Jane Doe" style="width:100%;background:#fff;color:#1a1a1a;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px">
+    </div>
+    <div>
+      <div style="font-size:12px;margin-bottom:4px">Email</div>
+      <input type="email" placeholder="jane@example.com" style="width:100%;background:#fff;color:#1a1a1a;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px">
+    </div>
+    <div>
+      <div style="font-size:12px;margin-bottom:4px">Role</div>
+      <select style="width:100%;background:#fff;color:#1a1a1a;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px">
+        <option>Engineer</option>
+        <option>Designer</option>
+        <option>PM</option>
+      </select>
+    </div>
+  </div>
+  <button type="button" data-bap-prompt="Submit signup form with the entered values" style="margin-top:16px;background:#EC3B4A;color:#fff;border:0;border-radius:6px;padding:10px 18px;font-size:13px;cursor:pointer">Sign up</button>
+</div>
+```

@@ -1,0 +1,11 @@
+# Sample widget — `chart`
+
+Worked example. The loader extracts the fenced HTML block as the skill's reference widget; structural rules in `lib/engine/tools/validate.ts` (contrast, click-target, tag balance, byte cap) must all pass.
+
+```html
+<div style="background:#0a0a0a;color:#fafafa;border-radius:10px;padding:20px">
+  <svg viewBox="0 0 400 220" style="width:100%">
+    <rect data-bap-prompt="What's the data for Jan?" x="20" y="120" width="60" height="80" fill="#EC3B4A" style="cursor:pointer"><title>Jan · $42K</title></rect>
+  </svg>
+</div>
+```

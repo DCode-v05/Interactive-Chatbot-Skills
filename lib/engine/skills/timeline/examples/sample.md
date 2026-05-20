@@ -1,0 +1,24 @@
+# Sample widget — `timeline`
+
+Worked example. The loader extracts the fenced HTML block as the skill's reference widget; structural rules in `lib/engine/tools/validate.ts` (contrast, click-target, tag balance, byte cap) must all pass.
+
+```html
+<div style="background:#fdfcf8;color:#1a1a1a;padding:22px;border-radius:14px;font-family:Georgia,serif">
+  <h3 style="margin:0 0 16px;font-size:18px">Y Combinator — milestones</h3>
+  <div style="position:relative;padding-left:120px">
+    <div style="position:absolute;left:96px;top:0;bottom:0;width:2px;background:#e3dccd"></div>
+    <div data-bap-prompt="Tell me more about: Founded by Paul Graham & Jessica Livingston (2005)" style="position:relative;padding-bottom:18px;cursor:pointer">
+      <div style="position:absolute;left:-120px;top:2px;width:80px;text-align:right;font-family:ui-monospace,monospace;font-size:12px;color:#666">2005</div>
+      <div style="position:absolute;left:-30px;top:6px;width:10px;height:10px;border-radius:50%;background:#1a1a1a"></div>
+      <div style="font-weight:600;font-size:14px">Founded by Paul Graham & Jessica Livingston</div>
+      <div style="font-size:12px;color:#666;margin-top:2px">First batch funded 8 startups in summer 2005.</div>
+    </div>
+    <div data-bap-prompt="Tell me more about: ~5,000 companies funded total (2024)" style="position:relative;padding-bottom:18px;cursor:pointer">
+      <div style="position:absolute;left:-120px;top:2px;width:80px;text-align:right;font-family:ui-monospace,monospace;font-size:12px;color:#EC3B4A;font-weight:700">2024</div>
+      <div style="position:absolute;left:-30px;top:6px;width:10px;height:10px;border-radius:50%;background:#EC3B4A"></div>
+      <div style="font-weight:600;font-size:14px">~5,000 companies funded total</div>
+      <div style="font-size:12px;color:#666;margin-top:2px">Combined valuation exceeds $600 billion.</div>
+    </div>
+  </div>
+</div>
+```

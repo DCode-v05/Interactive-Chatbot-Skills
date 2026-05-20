@@ -1,0 +1,10 @@
+# Sample widget — `confirm_card`
+
+Worked example. The loader extracts the fenced HTML block as the skill's reference widget; structural rules in `lib/engine/tools/validate.ts` (contrast, click-target, tag balance, byte cap) must all pass.
+
+```html
+<div style="background:#2a1a1a;color:#f4e8e8;border-left:4px solid #EC3B4A;border-radius:10px;padding:18px;font-family:ui-sans-serif">
+  <p style="margin:0 0 16px">Delete X? Cannot be undone.</p>
+  <button data-bap-prompt="Confirmed delete" data-bap-confirm style="background:#EC3B4A;color:#fff;border:0;padding:9px 16px;border-radius:6px">Delete</button>
+</div>
+```

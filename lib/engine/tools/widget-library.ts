@@ -57,7 +57,7 @@ function loadSkillsFromDisk(): Record<string, WidgetSkill> {
     if (!statSync(dirPath).isDirectory()) continue;
 
     const skillPath = join(dirPath, "SKILL.md");
-    const samplePath = join(dirPath, "examples", "sample.html");
+    const samplePath = join(dirPath, "examples", "sample.md");
 
     const skillSrc = readFileSync(skillPath, "utf8");
     const { data, body } = parseFrontmatter(skillSrc);
@@ -74,7 +74,7 @@ function loadSkillsFromDisk(): Record<string, WidgetSkill> {
       throw new Error(`Skill "${intent}" has invalid family: "${family}".`);
     }
 
-    const html = readFileSync(samplePath, "utf8");
+    const html = extractHtmlFromMd(readFileSync(samplePath, "utf8"));
 
     out[intent] = {
       intent,
@@ -178,4 +178,13 @@ function asString(v: unknown, fallback = ""): string {
 function asStringList(v: unknown): string[] {
   if (!Array.isArray(v)) return [];
   return v.filter((x): x is string => typeof x === "string" && x.length > 0);
+}
+
+// Extract the first ```html fenced block from a markdown sample. If no fence
+// is present, treat the whole file as raw HTML — lenient fallback so a stub
+// sample with just the HTML still works.
+function extractHtmlFromMd(md: string): string {
+  const m = md.match(/```html\s*\r?\n([\s\S]*?)\r?\n```/);
+  if (m) return m[1];
+  return md;
 }

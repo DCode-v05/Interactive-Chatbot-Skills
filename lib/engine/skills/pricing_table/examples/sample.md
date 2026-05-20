@@ -1,0 +1,41 @@
+# Sample widget — `pricing_table`
+
+Worked example. The loader extracts the fenced HTML block as the skill's reference widget; structural rules in `lib/engine/tools/validate.ts` (contrast, click-target, tag balance, byte cap) must all pass.
+
+```html
+<div style="background:#fdfcf8;color:#1a1a1a;padding:22px;border-radius:14px;font-family:Georgia,serif">
+  <h3 style="margin:0 0 16px;font-size:18px">Choose your plan</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+    <div style="border:1px solid #e3dccd;padding:16px;border-radius:10px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#888">Free</div>
+      <div style="font-size:28px;font-weight:700;margin:6px 0">$0<span style="font-size:14px;color:#888;font-weight:400">/mo</span></div>
+      <ul style="list-style:none;padding:0;margin:10px 0;font-size:13px;line-height:1.8">
+        <li>✓ 1 project</li>
+        <li>✓ 100 events/mo</li>
+        <li style="color:#aaa">✗ Email support</li>
+      </ul>
+      <button data-bap-prompt="Sign me up for Free" style="width:100%;background:transparent;color:#1a1a1a;border:1px solid #ccc;padding:8px;border-radius:6px;cursor:pointer">Start free</button>
+    </div>
+    <div style="border:2px solid #EC3B4A;padding:16px;border-radius:10px;position:relative">
+      <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#EC3B4A;color:#fff;padding:3px 10px;border-radius:999px;font-size:11px">Recommended</div>
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#EC3B4A">Pro</div>
+      <div style="font-size:28px;font-weight:700;margin:6px 0">$29<span style="font-size:14px;color:#888;font-weight:400">/mo</span></div>
+      <ul style="list-style:none;padding:0;margin:10px 0;font-size:13px;line-height:1.8">
+        <li>✓ Unlimited projects</li>
+        <li>✓ 1M events/mo</li>
+        <li>✓ Email + chat support</li>
+      </ul>
+      <button data-bap-prompt="Sign me up for Pro" style="width:100%;background:#EC3B4A;color:#fff;border:0;padding:8px;border-radius:6px;cursor:pointer">Start Pro</button>
+    </div>
+    <div style="border:1px solid #e3dccd;padding:16px;border-radius:10px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#888">Enterprise</div>
+      <div style="font-size:28px;font-weight:700;margin:6px 0">Custom</div>
+      <ul style="list-style:none;padding:0;margin:10px 0;font-size:13px;line-height:1.8">
+        <li>✓ SSO + audit logs</li>
+        <li>✓ SLA + dedicated CSM</li>
+      </ul>
+      <button data-bap-prompt="Contact sales" style="width:100%;background:transparent;color:#1a1a1a;border:1px solid #ccc;padding:8px;border-radius:6px;cursor:pointer">Contact sales</button>
+    </div>
+  </div>
+</div>
+```

@@ -1,6 +1,6 @@
 ---
 name: architecture-html-subagent
-description: Mini-bap is an HTML-widget subagent. Agentic 2-tool loop (build_widget, submit_widget) across 7 models, 30 widget skills (22 base + 8 v3 additions). Script + form allowed for interactive widgets.
+description: Mini-bap is an HTML-widget subagent. Agentic 2-tool loop (build_widget, submit_widget) across 7 models, 11 super-skill intents (was 30 leaf skills; collapsed via variant axes on chart/diagram/plan/etc). Script + form allowed for interactive widgets.
 metadata:
   type: project
 ---
@@ -20,20 +20,25 @@ Two tools, one phase each:
 
 `MAX_ITERATIONS = 8` in [[lib/engine/run-engine.ts]] is the safety cap.
 
-## Widget catalog (30 skills)
+## Widget catalog (11 super-skills, ~30 variants)
 
-Source of truth is the [[lib/engine/skills/]] directory — one subdir per intent containing `SKILL.md` (frontmatter: name/description/family/needs_interactivity/keywords/reminders + design-note body) and `examples/sample.html`. [[lib/engine/tools/widget-library.ts]] is now a thin disk loader (synchronous `readdirSync` at module init, minimal frontmatter parser) that exposes the same `WIDGET_INTENTS` / `getSkill` / `listSkills` API — adding a widget = create the directory, no code edit.
+Source of truth is the [[lib/engine/skills/]] directory — one subdir per super-skill containing `SKILL.md` (frontmatter: name/description/family/needs_interactivity/keywords/reminders/**variants** + design-note body with `## Variant: <name>` sections) and `examples/sample.md` (with a `\`\`\`html` fence per variant). [[lib/engine/tools/widget-library.ts]] is a thin disk loader (sync `readdirSync` at module init, minimal frontmatter parser) exposing `WIDGET_INTENTS` / `getSkill` / `listSkills` — adding a super-skill = create the directory, no code edit.
 
-| Family (engine taxonomy) | Skills |
-|---|---|
-| Static | chips · decision_card · confirm_card · stepper · checklist · timeline · table · chart · source_cards · inline_banner · form (visual-only, no real `<form>`) |
-| Static + script | code_block (clipboard-Copy IIFE) |
-| Diagrams | flowchart · venn_diagram · mind_map · sequence_diagram · tree_diagram · gantt_chart · map (treated as spatial diagram) |
-| Charts | pie_chart · heatmap · scatter_plot · funnel_chart · radar_chart |
-| Dashboards | kpi_dashboard · profile_card · kanban_board · pricing_table |
-| Interactive (script ± form) | calculator · quiz |
+The grouping was a deliberate trade-off the user requested **despite** the cached-vs-live token analysis suggesting it would be net-neutral or a slight loss (the cached catalog/enum saves ~30 tokens per turn but each `build_widget` response now carries the full multi-variant design note instead of one leaf-skill note). Phase 2 (deferred): make `runBuild` extract just the requested variant section from SKILL.md body so the live cost drops back to leaf-level.
 
-The system prompt SKILL CATALOG section in [[lib/engine/system-prompt-freeform.ts]] also surfaces a "Spatial" line for `map` so the agent's mental model includes geographic intent (the on-disk `family` field stays `diagram` — family drives script reminders only, not catalog presentation).
+| Super-skill | Variants | Family (engine, drives script reminder) |
+|---|---|---|
+| `chips` | — | static |
+| `decision` | tradeoff · destructive | static |
+| `plan` | steps · dated · schedule | diagram |
+| `list` | checklist · table | static |
+| `chart` | bar · pie · scatter · funnel · radar · heatmap | chart |
+| `diagram` | flow · sequence · tree · mind · venn | diagram |
+| `dashboard` | kpi · profile · kanban · pricing | dashboard |
+| `notice` | banner · sources | static |
+| `code_block` | — | static (`needs_interactivity: true` for clipboard IIFE) |
+| `interactive` | calculator · quiz · form | interactive |
+| `map` | — | diagram |
 
 ## Providers ([[lib/engine/providers/]])
 

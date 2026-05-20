@@ -1,31 +1,62 @@
-# Sample widget — `map`
+# Sample: Europe 4-stop itinerary
 
-Worked example. The loader extracts the fenced HTML block as the skill's reference widget; structural rules in `lib/engine/tools/validate.ts` (contrast, click-target, tag balance, byte cap) must all pass.
+**User prompt:** "Draw our 4-stop Europe itinerary: London → Paris → Berlin → Prague."
 
-```html
-<div style="background:#f4f1e8;color:#1a1a1a;border-radius:14px;padding:22px;font-family:ui-sans-serif">
-  <h3 style="margin:0 0 4px;font-size:16px">Europe itinerary</h3>
-  <div style="font-size:11px;color:#666;margin-bottom:14px">4 cities · approximate locations</div>
-  <svg viewBox="0 0 600 360" style="width:100%">
-    <rect x="0" y="0" width="600" height="360" fill="#e8e2d2"/>
-    <path d="M120,80 L180,60 L260,80 L320,70 L380,90 L420,140 L440,210 L380,260 L300,280 L220,260 L160,210 L100,180 Z" fill="#fff" stroke="#888" stroke-width="1"/>
-    <polyline points="200,150 270,170 340,200 410,180" fill="none" stroke="#EC3B4A" stroke-width="2" stroke-dasharray="5 4"/>
-    <g data-bap-prompt="Tell me more about: London" style="cursor:pointer">
-      <circle cx="200" cy="150" r="6" fill="#EC3B4A"/>
-      <text x="210" y="148" fill="#1a1a1a" font-size="11">London</text>
-    </g>
-    <g data-bap-prompt="Tell me more about: Paris" style="cursor:pointer">
-      <circle cx="270" cy="170" r="6" fill="#EC3B4A"/>
-      <text x="280" y="168" fill="#1a1a1a" font-size="11">Paris</text>
-    </g>
-    <g data-bap-prompt="Tell me more about: Berlin" style="cursor:pointer">
-      <circle cx="340" cy="200" r="6" fill="#EC3B4A"/>
-      <text x="350" y="198" fill="#1a1a1a" font-size="11">Berlin</text>
-    </g>
-    <g data-bap-prompt="Tell me more about: Prague" style="cursor:pointer">
-      <circle cx="410" cy="180" r="6" fill="#EC3B4A"/>
-      <text x="420" y="178" fill="#1a1a1a" font-size="11">Prague</text>
-    </g>
-  </svg>
-</div>
+**Why this is a map case:** the user explicitly asked to draw cities on a map, all 4 cities are within Europe, and the "→" wording asks for an ordered route — so we set `region: "europe"` and supply `routeIds`.
+
+**What the skill emits:**
+
+```json
+{
+  "widget": "map",
+  "version": "1.0",
+  "title": "Europe itinerary",
+  "caption": "4 cities · approximate locations",
+  "region": "europe",
+
+  "pins": [
+    {
+      "id": "london",
+      "name": "London",
+      "x": 200,
+      "y": 150,
+      "clickPrompt": "Tell me more about London on this itinerary"
+    },
+    {
+      "id": "paris",
+      "name": "Paris",
+      "x": 270,
+      "y": 170,
+      "clickPrompt": "Tell me more about Paris on this itinerary"
+    },
+    {
+      "id": "berlin",
+      "name": "Berlin",
+      "x": 340,
+      "y": 200,
+      "clickPrompt": "Tell me more about Berlin on this itinerary"
+    },
+    {
+      "id": "prague",
+      "name": "Prague",
+      "x": 380,
+      "y": 215,
+      "clickPrompt": "Tell me more about Prague on this itinerary"
+    }
+  ],
+
+  "routeIds": ["london", "paris", "berlin", "prague"]
+}
 ```
+
+## What this looks like rendered
+
+A paper-cream rounded card. Inside: the title "Europe itinerary" and the small muted caption "4 cities · approximate locations". Below them, an SVG with a beige sea fill, a rough white Europe outline stroked in grey, and four red pin dots labelled London, Paris, Berlin, Prague at their approximate viewBox coordinates. A dashed red polyline connects the pins in order: London → Paris → Berlin → Prague.
+
+## What clicks do
+
+- User clicks **the London pin** → chat fires "Tell me more about London on this itinerary" as the next user message
+- User clicks **the Paris pin** → chat fires "Tell me more about Paris on this itinerary"
+- User clicks **Berlin** or **Prague** → analogously
+
+The route polyline itself is not interactive — only the pin `<g>` is a click target. No re-typing. The prompt fires verbatim.

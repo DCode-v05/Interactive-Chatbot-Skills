@@ -1,9 +1,9 @@
 import type { ToolCall, ToolResult } from "./types";
-import { listIntents, getSkill } from "./widget-library";
-import { validateWidget } from "./validate";
+import { getJsonSkill, JSON_INTENTS } from "../skills/json-registry";
+import type { JsonWidget } from "@/lib/types/engine-widgets";
 
 export interface FinalRender {
-  html: string;
+  widget: JsonWidget;
   prose: string | null;
 }
 
@@ -15,15 +15,13 @@ export interface ExecuteResult {
 export function executeTool(call: ToolCall): ExecuteResult {
   try {
     switch (call.name) {
-      case "build_widget":
-        return runBuild(call);
-      case "submit_widget":
-        return runSubmit(call);
+      case "submit_widget_json":
+        return runSubmitJson(call);
       default:
         return {
           result: errorResult(
             call,
-            `Unknown tool "${call.name}". Available: build_widget, submit_widget.`,
+            `Unknown tool "${call.name}". Available: submit_widget_json.`,
           ),
         };
     }
@@ -33,106 +31,44 @@ export function executeTool(call: ToolCall): ExecuteResult {
   }
 }
 
-const SENTINEL_START = "<!--bap-widget:start-->";
-const SENTINEL_END = "<!--bap-widget:end-->";
-
-function runBuild(call: ToolCall): ExecuteResult {
+function runSubmitJson(call: ToolCall): ExecuteResult {
   const intent = String(call.input.intent ?? "").trim();
-  if (!intent) {
-    return { result: errorResult(call, `"intent" is required.`) };
-  }
-  const skill = getSkill(intent);
-  if (!skill) {
-    return {
-      result: errorResult(
-        call,
-        `Unknown intent "${intent}". Valid: ${listIntents().join(", ")}.`,
-      ),
-    };
-  }
-
-  const lines: string[] = [
-    `intent: ${intent}`,
-    `design_note: ${skill.designNote}`,
-  ];
-
-  const reminders: string[] = [];
-  if (skill.needsInteractivity) {
-    const formNote = skill.intent === "quiz" ? " + <form>" : "";
-    reminders.push(
-      `Uses <script>${formNote}. IIFE wrap · unique root id="bap-w-..." · ` +
-        `null-guard every querySelector · .value on <input>/<select>/<textarea>, ` +
-        `.textContent on <div>/<span> · "input" event for live updates · ` +
-        `no fetch/XHR/eval.`,
-    );
-  }
-  for (const r of skill.reminders) reminders.push(r);
-
-  reminders.push(
-    `CLICK TARGET: every widget needs at least one. ` +
-      (skill.intent === "source_cards"
-        ? `Use <a href="..." target="_blank" rel="noopener"> on each citation card.`
-        : `Use data-bap-prompt="..." on the natural target ` +
-          `(button / row / card / SVG node / table cell).`),
-  );
-
-  if (reminders.length > 0) {
-    lines.push(`reminders:`);
-    for (const r of reminders) lines.push(`  - ${r}`);
-  }
-  lines.push(``, `→ Compose HTML now, then call submit_widget.`);
-
-  return {
-    result: { toolCallId: call.id, name: call.name, content: lines.join("\n"), isError: false },
-  };
-}
-
-function runSubmit(call: ToolCall): ExecuteResult {
-  const intent = String(call.input.intent ?? "").trim();
-  const html = String(call.input.html ?? "");
+  const widget = call.input.widget;
   const proseRaw = call.input.prose;
   const prose =
     typeof proseRaw === "string" && proseRaw.trim().length > 0
       ? proseRaw.trim()
       : null;
 
-  const earlyIssues: string[] = [];
-
-  if (!intent) earlyIssues.push(`"intent" is required.`);
-  else if (!getSkill(intent)) {
-    earlyIssues.push(
-      `Unknown intent "${intent}". Valid: ${listIntents().join(", ")}.`,
-    );
-  }
-  if (!html) earlyIssues.push(`"html" is required.`);
-  if (
-    html &&
-    (!html.includes(SENTINEL_START) || !html.includes(SENTINEL_END))
-  ) {
-    earlyIssues.push(
-      `HTML missing sentinels. Wrap in ${SENTINEL_START} … ${SENTINEL_END}.`,
-    );
-  }
-
-  if (earlyIssues.length > 0) {
+  const skill = getJsonSkill(intent);
+  if (!skill) {
     return {
       result: rejectResult(
         call,
-        earlyIssues,
-        [],
-        `submit_widget rejected — fix and call submit_widget AGAIN with corrected input.`,
+        [
+          `Unknown intent "${intent}". Valid intents: ${JSON_INTENTS.join(", ")}.`,
+        ],
+        `submit_widget_json rejected — fix the intent and call again.`,
+      ),
+    };
+  }
+  if (!widget || typeof widget !== "object") {
+    return {
+      result: rejectResult(
+        call,
+        [`"widget" must be a JSON object conforming to the ${intent} schema.`],
+        `submit_widget_json rejected — provide the widget object and call again.`,
       ),
     };
   }
 
-  const v = validateWidget(html);
+  const v = skill.validate(widget);
   if (!v.valid) {
     return {
       result: rejectResult(
         call,
         v.issues,
-        v.warnings,
-        `submit_widget rejected — fix issues above and call submit_widget AGAIN.`,
+        `submit_widget_json rejected — fix the JSON above and call submit_widget_json AGAIN.`,
       ),
     };
   }
@@ -144,33 +80,21 @@ function runSubmit(call: ToolCall): ExecuteResult {
       content: [
         `valid: true`,
         `intent: ${intent}`,
-        `bytes: ${extractInner(html).length}`,
-        ...(v.warnings.length > 0
-          ? ["warnings:", ...v.warnings.map((w) => `  - ${w}`)]
-          : []),
+        v.summary,
         ``,
         `accepted — widget rendered. Loop ends.`,
       ].join("\n"),
       isError: false,
     },
-    finalRender: { html, prose },
+    finalRender: { widget: widget as JsonWidget, prose },
   };
 }
 
-function rejectResult(
-  call: ToolCall,
-  issues: string[],
-  warnings: string[],
-  nextStep: string,
-): ToolResult {
+function rejectResult(call: ToolCall, issues: string[], nextStep: string): ToolResult {
   const lines = [`valid: false`];
   if (issues.length > 0) {
     lines.push(`issues:`);
     for (const i of issues) lines.push(`  - ${i}`);
-  }
-  if (warnings.length > 0) {
-    lines.push(`warnings:`);
-    for (const w of warnings) lines.push(`  - ${w}`);
   }
   lines.push(``, `→ ${nextStep}`);
   return {
@@ -179,13 +103,6 @@ function rejectResult(
     content: lines.join("\n"),
     isError: false,
   };
-}
-
-function extractInner(raw: string): string {
-  const i = raw.indexOf(SENTINEL_START);
-  const j = raw.indexOf(SENTINEL_END);
-  if (i === -1 || j === -1 || j <= i) return raw;
-  return raw.slice(i + SENTINEL_START.length, j).trim();
 }
 
 function errorResult(call: ToolCall, message: string): ToolResult {

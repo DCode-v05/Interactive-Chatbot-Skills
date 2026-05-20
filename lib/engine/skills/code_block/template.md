@@ -1,19 +1,25 @@
-# Template — `code_block`
+# Code Block — Template
 
-```html
-<div id="bap-w-code" style="background:#0d1117;color:#e6edf3;border-radius:10px;font-family:ui-monospace;overflow:hidden">
-  <div style="background:#161b22;padding:8px 14px;font-size:11px;color:#8b949e;display:flex;align-items:center;justify-content:space-between">
-    <span data-bap-prompt="Explain this {{FILENAME}} code" style="cursor:pointer">{{FILENAME}}</span>
-    <button data-role="copy" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:2px 10px;font-size:11px;cursor:pointer;font-family:ui-monospace">Copy</button>
-  </div>
-  <pre data-role="src" style="margin:0;padding:14px"><code>{{CODE_BODY}}</code></pre>
-</div>
-<script>(function(){var r=document.getElementById("bap-w-code");if(!r)return;var btn=r.querySelector("[data-role=copy]"),src=r.querySelector("[data-role=src]");if(!btn||!src)return;btn.addEventListener("click",function(){try{navigator.clipboard.writeText(src.textContent||"");btn.textContent="Copied";setTimeout(function(){btn.textContent="Copy";},1200);}catch(e){}});})();</script>
+Copy the JSON, replace every `[bracketed placeholder]`, and emit. The validator rejects any unfilled placeholders.
+
+```json
+{
+  "widget": "code-block",
+  "version": "1.0",
+  "filename": "[lowercase filename with the conventional extension, e.g. fetch_with_retry.py]",
+  "language": "[lowercase-letters-only language slug, e.g. python]",
+  "code": "[the literal source — preserve indentation and line breaks; escape JSON quotes/backslashes as needed]",
+  "explainPrompt": "[full prompt fired when the user clicks the filename, e.g. Explain this fetch_with_retry.py code line by line]"
+}
 ```
 
-## Placeholders
+## Field reference
 
-- `{{FILENAME}}` — header strip text (also the click target for "Explain this code")
-- `{{CODE_BODY}}` — the actual code (HTML-escape `<` as `&lt;` if needed)
-- TWO click targets: the filename span (chat follow-up) + the Copy button (in-script clipboard write, no `data-bap-prompt`).
-- Script must use the IIFE pattern, null-guard, no fetch/eval.
+| Field | Required | Notes |
+|---|---|---|
+| `widget` | yes | Must be exactly `"code-block"` (hyphen, not underscore) |
+| `version` | yes | Currently `"1.0"` |
+| `filename` | yes | Non-empty. Lowercase, with extension. Doubles as the chat-continuation click target. |
+| `language` | yes | Non-empty. Lowercase letters only (`/^[a-z]+$/`). Used for the small language badge. |
+| `code` | yes | Non-empty. ≤ 8000 chars. Preserve indentation and line breaks exactly; React escapes the text. |
+| `explainPrompt` | yes | Non-empty. Literal next-message string fired when the filename is clicked. |

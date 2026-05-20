@@ -34,8 +34,10 @@ function renderMessage(msg: ChatMessage): string {
     ? `<div class="prose">${escapeHtml(msg.text).replace(/\n/g, "<br>")}</div>`
     : "";
 
-  const widgetHtml = msg.widgetHtml
-    ? `<div class="widget-wrap">${msg.widgetHtml}</div>`
+  const widgetHtml = msg.widgetJson
+    ? `<div class="widget-wrap"><pre class="widget-json">${escapeHtml(
+        JSON.stringify(msg.widgetJson, null, 2),
+      )}</pre></div>`
     : "";
 
   let usageHtml = "";

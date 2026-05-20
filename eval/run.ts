@@ -57,7 +57,7 @@ async function runOne(combo: Combo, prompt: TestPrompt): Promise<{
 }> {
   const start = Date.now();
   let text = "";
-  let widgetHtml = "";
+  let widgetJson: unknown = null;
   let usage: TrialResult extends infer T
     ? T extends { usage?: infer U }
       ? U
@@ -69,10 +69,14 @@ async function runOne(combo: Combo, prompt: TestPrompt): Promise<{
     useSkill: combo.useSkill,
   })) {
     if (ev.type === "text_delta") text += ev.text;
-    else if (ev.type === "widget_html") widgetHtml = ev.html;
+    else if (ev.type === "widget_json") widgetJson = ev.widget;
     else if (ev.type === "usage") usage = ev.usage as never;
     else if (ev.type === "error") throw new Error(ev.message);
   }
+  // Structural scoring was HTML-specific. After the JSON migration we just
+  // record whether a widget was emitted; semantic scoring per skill is a
+  // follow-up using the per-skill validators in lib/engine/skills/*/validate.ts.
+  const widgetHtml = widgetJson ? JSON.stringify(widgetJson) : "";
   return { text, widgetHtml, usage, latencyMs: Date.now() - start };
 }
 

@@ -1,4 +1,7 @@
-// Demo prompts grouped by widget intent. `kind` is descriptive, not enforced.
+// Demo prompts grouped by widget super-skill. `kind` matches the on-disk
+// skill folder; the user-facing variant intent comes through in the prompt
+// text itself (e.g. "Show me a pie chart" → the model picks intent=chart,
+// variant=pie inside).
 export interface PromptGroup {
   kind: string;
   label: string;
@@ -15,91 +18,93 @@ export const TEST_PROMPTS: PromptGroup[] = [
     ],
   },
   {
-    kind: "decision_card",
+    kind: "decision",
     label: "Decision",
     prompts: [
       "Should I use REST or GraphQL for my new API?",
       "Help me choose between TypeScript and Python for a new microservice",
-    ],
-  },
-  {
-    kind: "confirm_card",
-    label: "Confirm",
-    prompts: [
       "Send a cold email to 200 prospects from my list",
       "Delete all branches older than 6 months from the repo",
     ],
   },
   {
-    kind: "stepper",
-    label: "Plan / Steps",
+    kind: "plan",
+    label: "Plan / timeline / schedule",
     prompts: [
       "Plan a product launch in 5 steps",
       "Walk me through onboarding a new backend engineer",
-    ],
-  },
-  {
-    kind: "timeline",
-    label: "Timeline",
-    prompts: [
       "Show the history of OpenAI as a timeline",
       "Timeline of major web framework releases since 2010",
+      "Plan a 12-week product launch as a Gantt chart",
+      "Gantt of a database migration — schema, backfill, cutover, validation",
     ],
   },
   {
-    kind: "checklist",
-    label: "Checklist",
+    kind: "list",
+    label: "Checklist & table",
     prompts: [
       "Give me a code review checklist for a Next.js PR",
       "What should I check before going live with a new feature?",
-    ],
-  },
-  {
-    kind: "source_cards",
-    label: "Sources",
-    prompts: [
-      "Tell me about Y Combinator with sources",
-      "Find me 3 reputable articles about prompt caching",
-    ],
-  },
-  {
-    kind: "table",
-    label: "Table",
-    prompts: [
       "Compare AWS Lambda, Vercel Functions, and Cloudflare Workers in a table",
       "Show me a feature matrix for popular React state libraries",
     ],
   },
   {
     kind: "chart",
-    label: "Chart",
+    label: "Charts",
     prompts: [
       "Show me revenue trend over the last 6 months",
       "Visualize quarterly user growth as a bar chart",
-    ],
-  },
-  {
-    kind: "scatter_plot",
-    label: "Scatter plot",
-    prompts: [
+      "Show a pie chart of typical SaaS startup expenses by category",
+      "Pie chart of browser market share in 2026",
       "Scatter plot of revenue vs ad spend for the top 20 marketing campaigns",
       "Plot hours studied vs exam score for a class of 25",
-    ],
-  },
-  {
-    kind: "funnel_chart",
-    label: "Funnel",
-    prompts: [
       "Funnel chart: signups → activated → paying → renewed",
       "Show the e-commerce conversion funnel for last month",
+      "Radar chart comparing Slack vs Teams vs Discord on 5 traits",
+      "Compare myself to a senior engineer across 5 skill dimensions",
+      "Heatmap of website traffic by day of week and hour of day",
+      "Show GitHub-style commit activity heatmap for a contributor",
     ],
   },
   {
-    kind: "radar_chart",
-    label: "Radar",
+    kind: "diagram",
+    label: "Diagrams",
     prompts: [
-      "Radar chart comparing Slack vs Teams vs Discord on 5 traits",
-      "Compare myself to a senior engineer across 5 skill dimensions",
+      "Draw a flowchart for handling a customer refund request",
+      "Show the CI/CD pipeline flow for a typical PR merge",
+      "Sequence diagram: browser, app server, and auth server during OAuth login",
+      "Trace the API call flow for placing an e-commerce order",
+      "Show an engineering org as a tree — CTO at the top, 3 directors, then teams",
+      "Tree diagram of file types in a typical Next.js project",
+      "Mind map of skills needed to become a senior backend engineer",
+      "Map out the components of a modern observability stack",
+      "Venn diagram: data engineer vs data scientist vs analytics engineer",
+      "Show overlap between React, Vue, and Svelte feature sets",
+    ],
+  },
+  {
+    kind: "dashboard",
+    label: "Dashboards",
+    prompts: [
+      "Build a SaaS KPI dashboard: MRR, churn, ARPU, NPS",
+      "Show a marketing dashboard with traffic, signups, CAC, and LTV",
+      "Profile card for a fictional staff engineer at a fintech",
+      "Make a contact card for a freelance designer",
+      "Show a kanban board for a 3-person team shipping a new feature",
+      "Kanban for a Q3 product roadmap with backlog/in-progress/shipped columns",
+      "Design a 3-tier pricing page for a SaaS analytics product",
+      "Show Free / Pro / Enterprise pricing for a project management tool",
+    ],
+  },
+  {
+    kind: "notice",
+    label: "Banner & sources",
+    prompts: [
+      "Confirm that my deploy went through successfully",
+      "Warn me about the deprecation of an old API version",
+      "Tell me about Y Combinator with sources",
+      "Find me 3 reputable articles about prompt caching",
     ],
   },
   {
@@ -111,129 +116,13 @@ export const TEST_PROMPTS: PromptGroup[] = [
     ],
   },
   {
-    kind: "inline_banner",
-    label: "Banner",
-    prompts: [
-      "Confirm that my deploy went through successfully",
-      "Warn me about the deprecation of an old API version",
-    ],
-  },
-  {
-    kind: "flowchart",
-    label: "Flowchart",
-    prompts: [
-      "Draw a flowchart for handling a customer refund request",
-      "Show the CI/CD pipeline flow for a typical PR merge",
-    ],
-  },
-  {
-    kind: "sequence_diagram",
-    label: "Sequence diagram",
-    prompts: [
-      "Sequence diagram: browser, app server, and auth server during OAuth login",
-      "Trace the API call flow for placing an e-commerce order",
-    ],
-  },
-  {
-    kind: "tree_diagram",
-    label: "Tree diagram",
-    prompts: [
-      "Show an engineering org as a tree — CTO at the top, 3 directors, then teams",
-      "Tree diagram of file types in a typical Next.js project",
-    ],
-  },
-  {
-    kind: "gantt_chart",
-    label: "Gantt",
-    prompts: [
-      "Plan a 12-week product launch as a Gantt chart",
-      "Gantt of a database migration — schema, backfill, cutover, validation",
-    ],
-  },
-  {
-    kind: "venn_diagram",
-    label: "Venn diagram",
-    prompts: [
-      "Venn diagram: data engineer vs data scientist vs analytics engineer",
-      "Show overlap between React, Vue, and Svelte feature sets",
-    ],
-  },
-  {
-    kind: "mind_map",
-    label: "Mind map",
-    prompts: [
-      "Mind map of skills needed to become a senior backend engineer",
-      "Map out the components of a modern observability stack",
-    ],
-  },
-  {
-    kind: "pie_chart",
-    label: "Pie chart",
-    prompts: [
-      "Show a pie chart of typical SaaS startup expenses by category",
-      "Pie chart of browser market share in 2026",
-    ],
-  },
-  {
-    kind: "heatmap",
-    label: "Heatmap",
-    prompts: [
-      "Heatmap of website traffic by day of week and hour of day",
-      "Show GitHub-style commit activity heatmap for a contributor",
-    ],
-  },
-  {
-    kind: "kpi_dashboard",
-    label: "KPI dashboard",
-    prompts: [
-      "Build a SaaS KPI dashboard: MRR, churn, ARPU, NPS",
-      "Show a marketing dashboard with traffic, signups, CAC, and LTV",
-    ],
-  },
-  {
-    kind: "profile_card",
-    label: "Profile card",
-    prompts: [
-      "Profile card for a fictional staff engineer at a fintech",
-      "Make a contact card for a freelance designer",
-    ],
-  },
-  {
-    kind: "kanban_board",
-    label: "Kanban board",
-    prompts: [
-      "Show a kanban board for a 3-person team shipping a new feature",
-      "Kanban for a Q3 product roadmap with backlog/in-progress/shipped columns",
-    ],
-  },
-  {
-    kind: "pricing_table",
-    label: "Pricing",
-    prompts: [
-      "Design a 3-tier pricing page for a SaaS analytics product",
-      "Show Free / Pro / Enterprise pricing for a project management tool",
-    ],
-  },
-  {
-    kind: "calculator",
-    label: "Calculator (live)",
+    kind: "interactive",
+    label: "Interactive (live)",
     prompts: [
       "Build me a tip calculator with bill, people, and tip slider",
       "Make a unit converter for kilometers and miles",
-    ],
-  },
-  {
-    kind: "quiz",
-    label: "Quiz (live)",
-    prompts: [
       "Make a 3-question quiz about HTTP status codes",
       "Quick quiz on basic React hooks — 4 questions, multiple choice",
-    ],
-  },
-  {
-    kind: "form",
-    label: "Form",
-    prompts: [
       "Show me a user signup form with name, email, password, and role",
       "Build a 3-field contact form for a SaaS landing page",
     ],
@@ -244,6 +133,14 @@ export const TEST_PROMPTS: PromptGroup[] = [
     prompts: [
       "Show me a map of 6 fictional office locations across Europe",
       "Itinerary map: NYC → London → Paris → Berlin",
+    ],
+  },
+  {
+    kind: "comparison-table",
+    label: "Comparison (JSON)",
+    prompts: [
+      "Compare PostgreSQL, MongoDB, and SQLite for a small hobby blog",
+      "Which is better for a new microservice — TypeScript, Go, or Rust?",
     ],
   },
 ];

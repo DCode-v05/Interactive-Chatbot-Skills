@@ -44,7 +44,7 @@ export async function* runEngine(
     cacheWriteTokens: 0,
   };
 
-  let finalWidget: { html: string; prose: string | null } | null = null;
+  let finalWidget: import("./tools/executors").FinalRender | null = null;
   let loopError: string | null = null;
 
   for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
@@ -117,9 +117,9 @@ export async function* runEngine(
     if (finalWidget.prose) {
       yield { type: "text_delta", text: `\n\n${finalWidget.prose}\n\n` };
     }
-    yield { type: "widget_html", html: extractInner(finalWidget.html) };
+    yield { type: "widget_json", widget: finalWidget.widget };
   } else if (!loopError) {
-    loopError = `Agent did not call render_widget within ${MAX_ITERATIONS} iterations.`;
+    loopError = `Agent did not call submit_widget_json within ${MAX_ITERATIONS} iterations.`;
   }
 
   if (loopError) {
@@ -130,16 +130,14 @@ export async function* runEngine(
 }
 
 function summarizeInput(toolName: string, input: Record<string, unknown>): string {
-  if (toolName === "build_widget") {
-    return `intent: ${String(input.intent ?? "?")}`;
-  }
-  if (toolName === "submit_widget") {
+  if (toolName === "submit_widget_json") {
     const intent = String(input.intent ?? "?");
-    const htmlLen = String(input.html ?? "").length;
+    const widget = input.widget && typeof input.widget === "object" ? input.widget : {};
+    const widgetBytes = JSON.stringify(widget).length;
     const prose = typeof input.prose === "string" ? input.prose : "";
     return prose
-      ? `${intent} · ${htmlLen}B · "${truncate(prose, 50)}"`
-      : `${intent} · ${htmlLen}B`;
+      ? `${intent} · ${widgetBytes}B JSON · "${truncate(prose, 50)}"`
+      : `${intent} · ${widgetBytes}B JSON`;
   }
   return JSON.stringify(input).slice(0, 120);
 }
@@ -147,15 +145,6 @@ function summarizeInput(toolName: string, input: Record<string, unknown>): strin
 function truncate(s: string, n: number): string {
   if (s.length <= n) return s;
   return s.slice(0, n - 1) + "…";
-}
-
-function extractInner(raw: string): string {
-  const START = "<!--bap-widget:start-->";
-  const END = "<!--bap-widget:end-->";
-  const i = raw.indexOf(START);
-  const j = raw.indexOf(END);
-  if (i === -1 || j === -1 || j <= i) return raw;
-  return raw.slice(i + START.length, j).trim();
 }
 
 function buildUsageEvent(providerId: ProviderId, usage: UsageMetadata): EngineEvent {

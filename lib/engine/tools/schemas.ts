@@ -1,57 +1,46 @@
 import type { ToolDefinition } from "./types";
-import { WIDGET_INTENTS } from "./widget-library";
+import { JSON_INTENTS } from "../skills/json-registry";
 
 export const TOOL_DEFINITIONS: ToolDefinition[] = [
   {
-    name: "build_widget",
+    name: "submit_widget_json",
     description:
-      "PHASE 1 — Pre-flight. Pass the widget intent you've decided on. " +
-      "Returns the skill's design note + skill-specific reminders (script " +
-      "safety, special attributes, etc). HTML-free — costs only ~10 output " +
-      "tokens. Call this BEFORE submit_widget so you have the design " +
-      "context fresh when composing HTML.",
+      "Submit a typed widget. The engine validates the JSON shape against " +
+      "the skill's schema (lib/engine/skills/<intent>/validate.ts). If " +
+      "valid → renders + ENDS the loop (terminal). If invalid → returns " +
+      "issues; agent loops back with corrected JSON.\n\n" +
+      "See lib/engine/skills/<intent>/template.md for each skill's JSON " +
+      "schema. All widgets carry: { widget: <intent>, version: '1.0', " +
+      "[variant: <variant>], ...fields }. Click prompts are baked into " +
+      "the JSON; the host fires them on click. comparison-table additionally " +
+      "supports {option}/{attribute}/{value}/{options} placeholder substitution.",
     input_schema: {
       type: "object",
       properties: {
         intent: {
           type: "string",
-          enum: [...WIDGET_INTENTS],
-          description: "The widget skill you've chosen from the 20-item catalog.",
-        },
-      },
-      required: ["intent"],
-    },
-  },
-  {
-    name: "submit_widget",
-    description:
-      "PHASE 2 — Submit a widget. Validates intent + HTML structure + " +
-      "script safety in one pass. If valid → renders + ENDS the loop " +
-      "(terminal). If invalid → returns {valid:false, issues}, agent " +
-      "loops back with fixed HTML in the next call.",
-    input_schema: {
-      type: "object",
-      properties: {
-        intent: {
-          type: "string",
-          enum: [...WIDGET_INTENTS],
-          description: "Same intent passed to build_widget.",
-        },
-        html: {
-          type: "string",
+          enum: [...JSON_INTENTS],
           description:
-            "Full widget HTML INCLUDING <!--bap-widget:start--> and " +
-            "<!--bap-widget:end--> sentinel comments. Build a complete, " +
-            "considered widget with rich hierarchy, multiple sections, " +
-            "and the structural / typographic tools the system prompt " +
-            "describes. Use CSS shorthand for code-side neatness.",
+            "Widget super-skill intent. See lib/engine/skills/<intent>/SKILL.md " +
+            "for the schema of each.",
+        },
+        widget: {
+          type: "object",
+          description:
+            "The full widget JSON object conforming to the skill's schema. " +
+            "Must include the `widget` discriminator field set to the intent " +
+            "(note: code_block uses discriminator 'code-block' with a hyphen) " +
+            "and `version: \"1.0\"`. Multi-variant skills must also include " +
+            "the `variant` field.",
         },
         prose: {
           type: "string",
-          description: "Optional ONE-sentence preamble shown above the widget. Omit if redundant.",
+          description:
+            "Optional ONE-sentence preamble shown above the widget. Omit if " +
+            "redundant.",
         },
       },
-      required: ["intent", "html"],
+      required: ["intent", "widget"],
     },
     terminal: true,
   },

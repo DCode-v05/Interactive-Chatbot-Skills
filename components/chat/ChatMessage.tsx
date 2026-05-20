@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { Download, Copy, Check } from "lucide-react";
-import type { ChatMessage as ChatMessageType, UsageReport } from "@/lib/types/engine-widgets";
+import type {
+  ChatMessage as ChatMessageType,
+  JsonWidget,
+  UsageReport,
+} from "@/lib/types/engine-widgets";
 import { OutputSystem } from "@/components/output/OutputSystem";
 import { AgentTrace } from "@/components/output/AgentTrace";
 import { downloadWidget, copyWidget } from "@/lib/download-widget";
@@ -42,8 +46,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
           <div className="rounded-tl-md rounded-tr-2xl rounded-bl-2xl rounded-br-2xl bg-[var(--surface)] border border-[var(--border)] px-5 py-4">
             <OutputSystem message={message} />
           </div>
-          {message.widgetHtml && !message.isStreaming && (
-            <WidgetActions content={message.widgetHtml} />
+          {message.widgetJson && !message.isStreaming && (
+            <WidgetActions widget={message.widgetJson} />
           )}
           {message.usage && (
             <UsageFooter usage={message.usage} useSkill={message.useSkill} />
@@ -54,12 +58,12 @@ export function ChatMessage({ message }: ChatMessageProps) {
   );
 }
 
-function WidgetActions({ content }: { content: string }) {
+function WidgetActions({ widget }: { widget: JsonWidget }) {
   const [copied, setCopied] = useState(false);
 
   const onCopy = async () => {
     try {
-      await copyWidget(content);
+      await copyWidget(widget);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -67,24 +71,24 @@ function WidgetActions({ content }: { content: string }) {
     }
   };
 
-  const onDownload = () => downloadWidget(content);
+  const onDownload = () => downloadWidget(widget);
 
   return (
     <div className="flex items-center gap-2 px-1">
       <button
         type="button"
         onClick={onDownload}
-        title="Download as standalone .html file"
+        title="Download the widget's JSON payload"
         className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.15em] text-[var(--secondary)] hover:text-accent transition-colors px-2 py-1 rounded border border-transparent hover:border-[var(--border)]"
       >
         <Download className="h-3 w-3" strokeWidth={1.75} />
-        Download .html
+        Download .json
       </button>
       <span className="text-[var(--secondary)] opacity-30">·</span>
       <button
         type="button"
         onClick={onCopy}
-        title="Copy widget HTML to clipboard"
+        title="Copy widget JSON to clipboard"
         className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.15em] text-[var(--secondary)] hover:text-accent transition-colors px-2 py-1 rounded border border-transparent hover:border-[var(--border)]"
       >
         {copied ? (
@@ -92,7 +96,7 @@ function WidgetActions({ content }: { content: string }) {
         ) : (
           <Copy className="h-3 w-3" strokeWidth={1.75} />
         )}
-        {copied ? "Copied" : "Copy HTML"}
+        {copied ? "Copied" : "Copy JSON"}
       </button>
     </div>
   );

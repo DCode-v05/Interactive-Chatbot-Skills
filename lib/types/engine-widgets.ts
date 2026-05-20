@@ -1,3 +1,16 @@
+import type { ComparisonTableWidget } from "./widgets/comparison-table";
+import type { ChipsWidget } from "./widgets/chips";
+import type { NoticeWidget } from "./widgets/notice";
+import type { ListWidget } from "./widgets/list";
+import type { ChartWidget } from "./widgets/chart";
+import type { PlanWidget } from "./widgets/plan";
+import type { DashboardWidget } from "./widgets/dashboard";
+import type { CodeBlockWidget } from "./widgets/code-block";
+import type { MapWidget } from "./widgets/map";
+import type { DiagramWidget } from "./widgets/diagram";
+import type { InteractiveWidget } from "./widgets/interactive";
+import type { DecisionWidget } from "./widgets/decision";
+
 export interface UsageReport {
   providerId: string;
   inputTokens: number;
@@ -16,6 +29,26 @@ export interface TraceStep {
   isError: boolean;
 }
 
+/**
+ * Discriminated union of all JSON-output widgets. Grows one variant per
+ * super-skill as we migrate from HTML to JSON output. Each variant carries
+ * a `widget:` field (the JSON's discriminator) that the renderer registry
+ * keys off of.
+ */
+export type JsonWidget =
+  | ComparisonTableWidget
+  | ChipsWidget
+  | NoticeWidget
+  | ListWidget
+  | ChartWidget
+  | PlanWidget
+  | DashboardWidget
+  | CodeBlockWidget
+  | MapWidget
+  | DiagramWidget
+  | InteractiveWidget
+  | DecisionWidget;
+
 export type EngineEvent =
   | { type: "text_delta"; text: string }
   | { type: "tool_call"; iteration: number; toolName: string; inputSummary: string }
@@ -26,7 +59,7 @@ export type EngineEvent =
       resultSummary: string;
       isError: boolean;
     }
-  | { type: "widget_html"; html: string }
+  | { type: "widget_json"; widget: JsonWidget }
   | { type: "usage"; usage: UsageReport }
   | { type: "error"; message: string }
   | { type: "done" };
@@ -35,7 +68,7 @@ export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   text: string;
-  widgetHtml: string | null;
+  widgetJson: JsonWidget | null;
   useSkill?: boolean;
   usage?: UsageReport;
   trace?: TraceStep[];

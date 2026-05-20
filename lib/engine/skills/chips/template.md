@@ -1,18 +1,31 @@
-# Template — `chips`
+# Chips — Template
 
-Fill in `{{...}}` placeholders. Drop sections that don't apply.
+Copy the JSON, replace every `[bracketed placeholder]`, and emit. The validator rejects any unfilled placeholders.
 
-```html
-<div style="background:{{BG}};color:{{FG}};padding:14px 16px;border-radius:14px;display:flex;flex-wrap:wrap;gap:8px;font-family:{{FONT}}">
-  <!-- repeat 3–5 times -->
-  <button data-bap-prompt="{{FOLLOW_UP_PROMPT}}" style="background:{{PILL_BG}};color:{{FG}};border:1px solid {{PILL_BORDER}};border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer">{{CHIP_LABEL}}</button>
-</div>
+```json
+{
+  "widget": "chips",
+  "version": "1.0",
+  "title": "[Optional 2-4 word header above the pills. Empty string or omit if none.]",
+
+  "chips": [
+    {
+      "id": "[kebab-case-chip-id]",
+      "label": "[1-4 words shown on the pill]",
+      "prompt": "[Full prompt fired when this pill is clicked]"
+    }
+  ]
+}
 ```
 
-## Placeholders
+## Field reference
 
-- `{{BG}}` / `{{FG}}` — container background + foreground (must contrast)
-- `{{PILL_BG}}` / `{{PILL_BORDER}}` — pill colors (subtle vs container)
-- `{{FONT}}` — `ui-sans-serif` / `Georgia,serif` / `ui-monospace`
-- `{{FOLLOW_UP_PROMPT}}` — what gets sent as the next user message on click
-- `{{CHIP_LABEL}}` — visible chip text (usually short — 2–4 words)
+| Field | Required | Notes |
+|---|---|---|
+| `widget` | yes | Must be exactly `"chips"` |
+| `version` | yes | Currently `"1.0"` |
+| `title` | no | Optional short header |
+| `chips` | yes | 1–6 items |
+| `chips[].id` | yes | Kebab-case, unique within widget |
+| `chips[].label` | yes | 1–4 words, sentence-case |
+| `chips[].prompt` | yes | Non-empty; the literal next-message string |

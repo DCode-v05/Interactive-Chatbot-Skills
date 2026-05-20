@@ -2,7 +2,7 @@
 
 import type { ChatMessage } from "@/lib/types/engine-widgets";
 import { InlineTextRenderer } from "./InlineTextRenderer";
-import { HtmlBubble } from "./HtmlBubble";
+import { renderJsonWidget } from "./widgets/registry";
 
 interface OutputSystemProps {
   message: ChatMessage;
@@ -10,7 +10,7 @@ interface OutputSystemProps {
 
 export function OutputSystem({ message }: OutputSystemProps) {
   const hasText = message.text.length > 0;
-  const hasWidget = message.widgetHtml !== null;
+  const hasWidget = message.widgetJson !== null;
 
   if (!hasText && !hasWidget) {
     return (
@@ -30,7 +30,7 @@ export function OutputSystem({ message }: OutputSystemProps) {
       {hasText && (
         <InlineTextRenderer text={message.text} isStreaming={showCursor} />
       )}
-      {hasWidget && <HtmlBubble html={message.widgetHtml!} />}
+      {hasWidget && renderJsonWidget(message.widgetJson!)}
     </div>
   );
 }

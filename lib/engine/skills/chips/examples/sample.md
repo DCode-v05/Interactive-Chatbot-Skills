@@ -1,9 +1,49 @@
-# Sample widget — `chips`
+# Sample: opening-message chips
 
-Worked example. The loader extracts the fenced HTML block as the skill's reference widget; structural rules in `lib/engine/tools/validate.ts` (contrast, click-target, tag balance, byte cap) must all pass.
+**User prompt:** "Hi — what can you do?"
 
-```html
-<div style="background:#1b1f2a;color:#e7eaf3;padding:14px 16px;border-radius:14px;display:flex;flex-wrap:wrap;gap:8px;font-family:ui-sans-serif">
-  <button data-bap-prompt="Tell me more" style="background:#262c3a;color:#e7eaf3;border:1px solid #353c4d;border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer">Tell me more</button>
-</div>
+**Why this is a chips case:** open-ended hello, no specific question. Offer a small menu of starting points instead of a wall of capabilities prose.
+
+**What the skill emits:**
+
+```json
+{
+  "widget": "chips",
+  "version": "1.0",
+  "title": "Try one of these",
+
+  "chips": [
+    {
+      "id": "compare-tools",
+      "label": "Compare tools",
+      "prompt": "Compare PostgreSQL, MongoDB, and SQLite for a hobby blog"
+    },
+    {
+      "id": "plan-launch",
+      "label": "Plan a launch",
+      "prompt": "Plan a product launch in 5 steps"
+    },
+    {
+      "id": "show-dashboard",
+      "label": "Show a KPI dashboard",
+      "prompt": "Build a SaaS KPI dashboard: MRR, churn, ARPU, NPS"
+    },
+    {
+      "id": "quick-quiz",
+      "label": "Quick quiz",
+      "prompt": "Make a 3-question quiz about HTTP status codes"
+    }
+  ]
+}
 ```
+
+## What this looks like rendered
+
+A small header "Try one of these" above a row of 4 rounded pills. Each pill is a single button — hover lifts the border to BAP red.
+
+## What clicks do
+
+- User clicks **"Compare tools"** → chat fires "Compare PostgreSQL, MongoDB, and SQLite for a hobby blog" as the next user message
+- User clicks **"Plan a launch"** → chat fires "Plan a product launch in 5 steps"
+
+No re-typing. The prompt fires verbatim.

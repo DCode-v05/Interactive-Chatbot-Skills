@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import type { EngineEvent, ChatMessage, TraceStep } from "@/lib/types/engine-widgets";
+import type { EngineEvent, ChatMessage, TraceStep, JsonWidget } from "@/lib/types/engine-widgets";
 import type { ProviderId } from "@/lib/engine/providers";
 import { uid } from "@/lib/utils";
 
@@ -21,7 +21,7 @@ interface UseChatReturn {
 interface AssistantBuilder {
   id: string;
   text: string;
-  widgetHtml: string | null;
+  widgetJson: JsonWidget | null;
   usage: ChatMessage["usage"];
   trace: TraceStep[];
   pending: Map<string, number>;
@@ -66,8 +66,8 @@ function applyEvent(builder: AssistantBuilder, ev: EngineEvent): boolean {
       }
       return false;
     }
-    case "widget_html":
-      builder.widgetHtml = ev.html;
+    case "widget_json":
+      builder.widgetJson = ev.widget;
       return false;
     case "usage":
       builder.usage = ev.usage;
@@ -135,14 +135,14 @@ export function useChat(): UseChatReturn {
       id: uid("u"),
       role: "user",
       text: message,
-      widgetHtml: null,
+      widgetJson: null,
     };
     const assistantId = uid("a");
     const assistantMsg: ChatMessage = {
       id: assistantId,
       role: "assistant",
       text: "",
-      widgetHtml: null,
+      widgetJson: null,
       useSkill: opts.useSkill,
       trace: [],
       isStreaming: true,
@@ -173,7 +173,7 @@ export function useChat(): UseChatReturn {
       const builder: AssistantBuilder = {
         id: assistantId,
         text: "",
-        widgetHtml: null,
+        widgetJson: null,
         usage: undefined,
         trace: [],
         pending: new Map(),
@@ -188,7 +188,7 @@ export function useChat(): UseChatReturn {
               ? {
                   ...m,
                   text: builder.text,
-                  widgetHtml: builder.widgetHtml,
+                  widgetJson: builder.widgetJson,
                   usage: builder.usage,
                   trace: [...builder.trace],
                   isStreaming: !isDone,

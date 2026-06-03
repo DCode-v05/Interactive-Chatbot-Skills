@@ -1,4 +1,4 @@
----
+﻿---
 name: plan
 description: Render sequential or temporal layouts as a typed widget instead of prose. Trigger on "walk me through", "give me steps", "show the milestones / history of X", "show a roadmap / project plan / Gantt with overlapping tasks", or any answer whose shape IS an ordered list of steps, dated events, or scheduled tasks.
 allowed-tools:
@@ -6,23 +6,23 @@ allowed-tools:
 
 # Plan Widget
 
-You are generating an **interactive plan widget**, not a written answer. The widget has three variants — pick exactly one per turn. Output is JSON the Mini-BAP host renders; you provide the data, the renderer controls every pixel (arrow alignment, dot centering, bar positioning).
+You are generating an **interactive plan widget**, not a written answer. The widget has three variants â€” pick exactly one per turn. Output is JSON the Skillet host renders; you provide the data, the renderer controls every pixel (arrow alignment, dot centering, bar positioning).
 
 ## When to use this skill
 
-**variant: `steps`** — numbered process where the *order* is the story (no real dates):
+**variant: `steps`** â€” numbered process where the *order* is the story (no real dates):
 
 - "Walk me through onboarding a new engineer"
 - "What are the steps to migrate from Pages Router to App Router?"
 - "How do I rotate a production secret?"
 
-**variant: `dated`** — historical or future events tied to specific dates (no status / no overlap):
+**variant: `dated`** â€” historical or future events tied to specific dates (no status / no overlap):
 
 - "Show me the milestones of Y Combinator"
 - "Roadmap of GPT model releases since 2018"
 - "Key launch dates for Project Phoenix"
 
-**variant: `schedule`** — overlapping work with start/end durations on a date axis (Gantt):
+**variant: `schedule`** â€” overlapping work with start/end durations on a date axis (Gantt):
 
 - "Give me a project plan for the migration with overlapping workstreams"
 - "Show the next 3 months of releases as a Gantt"
@@ -30,30 +30,30 @@ You are generating an **interactive plan widget**, not a written answer. The wid
 
 Do **not** use this skill when:
 
-- The answer is a single status outcome → use `notice` variant `banner`
-- The items are unordered (tick them off in any order) → use `list` variant `checklist`
-- The user wants a Kanban board (todo / doing / done columns) → use `dashboard` variant `kanban`
-- Only 1–2 items exist → reply in prose
+- The answer is a single status outcome â†’ use `notice` variant `banner`
+- The items are unordered (tick them off in any order) â†’ use `list` variant `checklist`
+- The user wants a Kanban board (todo / doing / done columns) â†’ use `dashboard` variant `kanban`
+- Only 1â€“2 items exist â†’ reply in prose
 
 ## What to gather before writing
 
 For **steps**:
 
-1. **3–6 items.** Fewer feels too thin; more is fatigue. Each item has an `n` (the display number, increasing monotonically) and a stable kebab-case `id`.
-2. **At most one `current: true`** — marks the "you-are-here" step. Renderer fills its circle in BAP red. If the user hasn't started yet or has finished, omit the current marker (all `current: false`).
-3. **`clickPrompt`** per step — write it as the user would type ("Tell me more about step 3: rotate the secret in production").
+1. **3â€“6 items.** Fewer feels too thin; more is fatigue. Each item has an `n` (the display number, increasing monotonically) and a stable kebab-case `id`.
+2. **At most one `current: true`** â€” marks the "you-are-here" step. Renderer fills its circle in BAP red. If the user hasn't started yet or has finished, omit the current marker (all `current: false`).
+3. **`clickPrompt`** per step â€” write it as the user would type ("Tell me more about step 3: rotate the secret in production").
 
 For **dated**:
 
-1. **3–8 events in chronological order.** Don't sort backwards — the renderer trusts your order.
+1. **3â€“8 events in chronological order.** Don't sort backwards â€” the renderer trusts your order.
 2. **`date`** is display-only (e.g. `"2005"`, `"Jan 2026"`, `"2026-05-20"`). Pick a granularity that matches the timeline (year-only for a decade, month-day for a quarter).
-3. **At most one `accent: true`** — the key / most-recent / current milestone, rendered with BAP-red date + dot.
+3. **At most one `accent: true`** â€” the key / most-recent / current milestone, rendered with BAP-red date + dot.
 
 For **schedule**:
 
-1. **`dateRange`** — the x-axis bounds (`startISO`, `endISO`, both `YYYY-MM-DD`). Pick a range that comfortably contains all task spans.
-2. **2–8 `tasks`** — each with `startISO`, `endISO`, both inside `dateRange`. Tasks may overlap (that's the whole point).
-3. **`today`** (optional) — `YYYY-MM-DD`. If present, must fall inside `dateRange`. The renderer draws a dotted vertical line at that x.
+1. **`dateRange`** â€” the x-axis bounds (`startISO`, `endISO`, both `YYYY-MM-DD`). Pick a range that comfortably contains all task spans.
+2. **2â€“8 `tasks`** â€” each with `startISO`, `endISO`, both inside `dateRange`. Tasks may overlap (that's the whole point).
+3. **`today`** (optional) â€” `YYYY-MM-DD`. If present, must fall inside `dateRange`. The renderer draws a dotted vertical line at that x.
 4. Never include pixel coordinates. The renderer derives every `x`, `width`, and tick position from the ISO dates.
 
 ## Filling the template

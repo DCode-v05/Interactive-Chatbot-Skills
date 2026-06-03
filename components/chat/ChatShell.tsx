@@ -70,7 +70,7 @@ export function ChatShell() {
           <div className="flex items-baseline gap-3">
             <Sparkles className="h-5 w-5 text-accent translate-y-[3px]" strokeWidth={1.5} />
             <h1 className="font-display text-2xl font-bold tracking-tight leading-none">
-              Mini-BAP
+              Skillet
             </h1>
             <span className="hidden md:inline text-[10px] uppercase tracking-[0.25em] text-[var(--secondary)] ml-2 font-mono">
               Interactive UI Responses

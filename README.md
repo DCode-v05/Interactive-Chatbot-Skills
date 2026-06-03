@@ -1,121 +1,185 @@
-# mini-bap
+# Skillet
 
-A self-contained Next.js prototype that demonstrates the **Interactive UI Responses** architecture from [`../INTERACTIVE_UI_RESPONSES_PLAN.md`](../INTERACTIVE_UI_RESPONSES_PLAN.md): the AI's reply is composed of typed UI widgets — chips, decision cards, charts, flowcharts, tables, steppers — instead of plain markdown text.
+## Project Description
+Skillet is a self-contained Next.js application that reimagines the chat interface: instead of replying with plain markdown text, the AI composes its answer out of **typed, interactive UI widgets** — charts, comparison tables, decision cards, diagrams, plans, maps, dashboards, code blocks, and clickable chips. An agentic tool-use loop drives a Large Language Model to pick the right widget for each question, fill a validated JSON schema, and stream it back to the browser, where a typed renderer registry turns it into a real React component. The result is a chat that *shows* its answers and lets you click into them to drive the next turn.
 
-The chat UX mirrors BAP's Super Chat: streaming bubbles, lucide icons, the BAP red accent (`#EC3B4A`), and a textarea composer at the bottom.
+---
 
-## What it shows
+## Project Details
 
-1. The user types in a textarea.
-2. The browser POSTs `{ message, history }` to `/api/engine/execute`.
-3. The route streams Server-Sent Events back from the **real LLM** (Anthropic Claude), instructed via system prompt to emit `<ui-widget kind="..." id="...">JSON</ui-widget>` directives. A server-side parser strips the directives and translates them into typed `ui:widget_*` SSE events.
-4. The frontend's `useChat` hook reduces the SSE event stream into a `ChatMessage` with an interleaved `blocks: (text | widget)[]` array.
-5. `OutputSystem` walks the blocks. Text is rendered via `react-markdown`. Widgets are dispatched through a typed **renderer registry** to dedicated React components.
-6. Clicking any chip / decision-card CTA / confirm button fires a new turn with the action's payload as the next user message.
+### Problem Statement
+Conventional AI chat returns a wall of markdown text, even when the best answer is a chart, a table, or a step-by-step plan. Plain prose is hard to scan, not interactive, and forces the user to mentally reconstruct structure that the model already understands. Skillet solves this by giving the model a catalog of typed widgets and a strict JSON contract for each, so quantitative, comparative, and procedural answers render as purpose-built, clickable UI instead of text.
 
-## The 12 widgets
+### How It Works
+1. The user types a prompt in the composer and picks a model.
+2. The browser POSTs `{ message, history }` to `/api/engine/execute`, which streams **Server-Sent Events** back.
+3. The engine ([`lib/engine/run-engine.ts`](lib/engine/run-engine.ts)) runs an **agentic tool-use loop** (up to 8 iterations) against the selected provider.
+4. The model is instructed via progressive-disclosure **skills** and must call the terminal `submit_widget_json` tool with a `{ intent, widget, prose }` payload.
+5. The engine **validates** the JSON against the skill's schema. If invalid, the issues are fed back and the model retries; if valid, the widget is emitted and the loop ends.
+6. The frontend's `useChat` hook reduces the SSE stream into a `ChatMessage`; `OutputSystem` dispatches the widget through a typed **renderer registry** to a dedicated React component.
+7. Every interactive element (chip, decision CTA, chart bar, map pin) carries a pre-baked click prompt that fires as the next user turn — so the conversation drives itself.
 
-| Kind | Renderer | Library |
+### The Widget Skills
+Each widget is a self-contained "skill" with its own `SKILL.md` (when/how to use it), `template.md` (JSON skeleton), worked `examples/`, and a `validate.ts` schema enforcer.
+
+| Intent | Renderer | What it shows |
 |---|---|---|
-| `chips` | [ChipsWidget](components/output/widgets/ChipsWidget.tsx) | native button |
-| `decision_card` | [DecisionCardWidget](components/output/widgets/DecisionCardWidget.tsx) | native |
-| `confirm_card` | [ConfirmCardWidget](components/output/widgets/ConfirmCardWidget.tsx) | native |
-| `stepper` | [StepperWidget](components/output/widgets/StepperWidget.tsx) | framer-motion |
-| `checklist` | [ChecklistWidget](components/output/widgets/ChecklistWidget.tsx) | native |
-| `tabs` | [TabsWidget](components/output/widgets/TabsWidget.tsx) | radix tabs |
-| `source_cards` | [SourceCardsWidget](components/output/widgets/SourceCardsWidget.tsx) | native |
-| `table` | [TableWidget](components/output/widgets/TableWidget.tsx) | `@tanstack/react-table` |
-| `chart` | [ChartWidget](components/output/widgets/ChartWidget.tsx) | `recharts` |
-| `flowchart` | [FlowchartWidget](components/output/widgets/FlowchartWidget.tsx) | `mermaid` |
-| `code_block` | [CodeBlockWidget](components/output/widgets/CodeBlockWidget.tsx) | `react-syntax-highlighter` |
-| `inline_banner` | [InlineBannerWidget](components/output/widgets/InlineBannerWidget.tsx) | native |
+| `comparison-table` | [ComparisonTableWidget](components/output/widgets/ComparisonTableWidget.tsx) | Options × attributes matrix with drill-in cells |
+| `chart` | [ChartWidget](components/output/widgets/ChartWidget.tsx) | Bar, pie, scatter, funnel, radar, heatmap |
+| `plan` | [PlanWidget](components/output/widgets/PlanWidget.tsx) | Stepper, timeline, Gantt |
+| `diagram` | [DiagramWidget](components/output/widgets/DiagramWidget.tsx) | Flowchart, sequence, tree, mind-map, Venn |
+| `dashboard` | [DashboardWidget](components/output/widgets/DashboardWidget.tsx) | Stat tiles, profile, pricing cards |
+| `decision` | [DecisionWidget](components/output/widgets/DecisionWidget.tsx) | Side-by-side option cards with a recommendation |
+| `interactive` | [InteractiveWidget](components/output/widgets/InteractiveWidget.tsx) | Live calculators, quizzes, forms |
+| `list` | [ListWidget](components/output/widgets/ListWidget.tsx) | Tables and checklists |
+| `map` | [MapWidget](components/output/widgets/MapWidget.tsx) | Pinned locations with click prompts |
+| `code-block` | [CodeBlockWidget](components/output/widgets/CodeBlockWidget.tsx) | Syntax-highlighted code with copy |
+| `notice` | [NoticeWidget](components/output/widgets/NoticeWidget.tsx) | Status / banner callouts |
+| `chips` | [ChipsWidget](components/output/widgets/ChipsWidget.tsx) | Clickable follow-up prompt pills |
 
-Any other widget kind falls through to [`FallbackWidget`](components/output/widgets/FallbackWidget.tsx).
+### Multi-Provider Support
+The engine is provider-agnostic ([`lib/engine/providers/`](lib/engine/providers/)). Pick any model from the UI's mode selector:
+- **Anthropic** — `sonnet` (Claude Sonnet 4.6), `haiku` (Claude Haiku 4.5)
+- **Google** — `gemini-3`, `gemini-3.1`
+- **OpenAI** — `gpt-5.4-mini`, `gpt-5.4`, `gpt-5.5`
 
-## Setup
+### Cost & Usage Tracking
+Every turn reports token usage, prompt-cache hit rate, and a computed dollar cost ([`lib/engine/pricing.ts`](lib/engine/pricing.ts)), surfaced live in the UI via the [CostCalculator](components/chat/CostCalculator.tsx). An eval harness ([`eval/`](eval/)) runs a cost-efficiency sweep across models and prompts.
 
-```bash
-npm install
-cp .env.local.example .env.local
-# then put your key in .env.local
-npm run dev
-# open http://localhost:3000
+### Web Application
+The chat UI provides:
+- A streaming-bubble chat shell with an agent-trace view of each tool-loop iteration
+- A model selector and a skill toggle (raw freeform vs. frontend-design skill)
+- A prompt library of demo questions, each wired to show a specific widget
+- Clickable widgets that fire follow-up turns automatically
+- One-click export of the conversation to a standalone HTML page
+
+---
+
+## Tech Stack
+- TypeScript 5
+- Next.js 15 (App Router) + React 19
+- Tailwind CSS 3
+- Anthropic SDK · OpenAI SDK · Google Generative AI SDK
+- Server-Sent Events (streaming)
+- react-markdown · react-syntax-highlighter · lucide-react
+- Node.js 18+
+
+---
+
+## Getting Started
+
+### 1. Clone the repository
+```
+git clone https://github.com/DCode-v05/Skillet.git
+cd Skillet
 ```
 
-`ANTHROPIC_API_KEY` is required — the route has no fallback.
+### 2. Install dependencies
+```
+npm install
+```
 
-### Environment variables
+### 3. Configure environment variables
+```
+cp .env.local.example .env.local
+```
+Then add your API key(s) to `.env.local`:
 
 | Variable | Purpose |
 |---|---|
-| `ANTHROPIC_API_KEY` | **Required.** |
-| `ANTHROPIC_MODEL` | Optional override. Defaults to `claude-sonnet-4-6`. |
+| `ANTHROPIC_API_KEY` | Required for the Anthropic (Claude) models |
+| `GOOGLE_API_KEY` | Required for the Gemini models |
+| `OPENAI_API_KEY` | Required for the GPT models |
 
-## Demo prompts
+You only need a key for the provider(s) you intend to use.
 
-These are wired into the empty-state chips:
-
-| Prompt | Widgets you should see |
-|---|---|
-| Compare PostgreSQL vs ClickHouse | text → table → decision_card → chips |
-| How does OAuth 2.0 work? | text → flowchart → chips |
-| Plan a product launch in 5 steps | text → stepper → chips |
-| Show me revenue trend over the last 6 months | text → chart → chips |
-| Write a hello world in Python | text → code_block → chips |
-| Should I send this email to 200 users? | text → confirm_card. Click Send → inline_banner success |
-| Show me a checklist for code review | text → checklist → chips |
-| What's the difference between SQL and NoSQL? | text → tabs → chips |
-| Tell me about Y Combinator | text → source_cards → chips |
-
-Click any chip — the chip's `prompt` payload becomes the next user turn automatically.
-
-## Architecture in 30 seconds
-
+### 4. Run the app
 ```
-ChatInput  ─► useChat.send()
-                │
-                └─► fetch POST /api/engine/execute  (SSE)
-                          │
-                          └─ lib/engine/run-engine.ts
-                                     │
-                                     ├─ streamFromAnthropic()       (anthropic-client.ts)
-                                     └─ runWidgetParser()           (widget-parser.ts)
-                                            │
-                                            ▼
-                          inline_text_delta + ui:widget_start + ui:widget_complete
-                                            │
-                                            ▼
-useChat reducer ─► ChatMessage { blocks: (text | widget)[], widgets: { id → state } }
-                                            │
-                                            ▼
-                          OutputSystem walks blocks ─► InlineTextRenderer / renderWidget()
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000).
+
+To run the cost-efficiency eval sweep:
+```
+npm run eval
 ```
 
-## Key files
+---
 
-- [`app/api/engine/execute/route.ts`](app/api/engine/execute/route.ts) — SSE handler.
-- [`lib/types/engine-widgets.ts`](lib/types/engine-widgets.ts) — `WidgetKind` union and per-widget payload types.
-- [`lib/engine/system-prompt.ts`](lib/engine/system-prompt.ts) — LLM prompt with widget-directive guide.
-- [`lib/engine/widget-parser.ts`](lib/engine/widget-parser.ts) — state-machine parser for `<ui-widget>` directives in the LLM token stream.
-- [`lib/hooks/useChat.ts`](lib/hooks/useChat.ts) — chat state + SSE consumer + reducer over `EngineEvent`.
-- [`components/output/OutputSystem.tsx`](components/output/OutputSystem.tsx) — walks `message.blocks` and dispatches each block.
-- [`components/output/widgets/registry.tsx`](components/output/widgets/registry.tsx) — `WidgetKind → renderer` map.
+## Usage
+- Type any prompt, or click one from the prompt library, and choose a model.
+- Skillet streams its reasoning trace, then renders a typed widget answer.
+- Click any chip, decision CTA, chart bar, or map pin — its baked-in prompt becomes your next message.
+- Watch the live token / cost readout for each turn.
+- Export the conversation to a self-contained HTML file at any time.
 
-## Adding a new widget kind
+---
 
-1. Add the kind to `WidgetKind` union and define a `*Payload` interface in [`lib/types/engine-widgets.ts`](lib/types/engine-widgets.ts).
-2. Create `components/output/widgets/<Name>Widget.tsx` consuming `RendererProps`.
-3. Register it in [`components/output/widgets/registry.tsx`](components/output/widgets/registry.tsx).
-4. Add a section to [`lib/engine/system-prompt.ts`](lib/engine/system-prompt.ts) telling the LLM when and how to use it.
-That is the full surface. No engine internals to touch.
+## Project Structure
+```
+Skillet/
+│
+├── app/
+│   ├── api/engine/execute/route.ts   # SSE handler — streams the engine
+│   ├── layout.tsx                    # Root layout + metadata
+│   ├── page.tsx                      # Chat page
+│   └── globals.css                   # Global styles
+│
+├── components/
+│   ├── chat/                         # Shell, input, message list, mode selector,
+│   │                                 #   prompt library, cost calculator
+│   └── output/
+│       ├── OutputSystem.tsx          # Walks message blocks → dispatches widgets
+│       ├── AgentTrace.tsx            # Tool-loop iteration trace
+│       └── widgets/                  # One React renderer per widget + registry
+│
+├── lib/
+│   ├── engine/
+│   │   ├── run-engine.ts             # Agentic tool-use loop
+│   │   ├── providers/                # Anthropic · Google · OpenAI adapters
+│   │   ├── tools/                    # submit_widget_json tool + executors
+│   │   ├── skills/                   # One folder per widget skill
+│   │   │   └── <skill>/
+│   │   │       ├── SKILL.md          # When/how to use it
+│   │   │       ├── template.md       # JSON skeleton
+│   │   │       ├── validate.ts       # Schema enforcer
+│   │   │       └── examples/         # Worked examples
+│   │   ├── system-prompt-freeform.ts # Base system prompt
+│   │   └── pricing.ts                # Per-model cost computation
+│   ├── hooks/useChat.ts              # SSE consumer + chat-state reducer
+│   ├── types/                        # Widget + engine type definitions
+│   ├── download-page.ts              # HTML conversation export
+│   └── download-widget.ts            # Single-widget export
+│
+├── eval/                             # Cost-efficiency sweep harness
+├── sample/                           # Reference skill scaffold
+├── package.json
+└── README.md                         # Project documentation
+```
 
-## Non-goals
+---
 
-- No auth, no persistence, no users — refresh = new chat.
-- No artifact panel, no voice, no file uploads.
-- No `ui:widget_delta` JSON Patch streaming. Widgets are all-or-nothing.
-- No Socket.IO. SSE only.
+## Contributing
 
-## License
+Contributions are welcome! To contribute:
+1. Fork the repository
+2. Create a new branch:
+   ```bash
+   git checkout -b feature/your-feature
+   ```
+3. Commit your changes:
+   ```bash
+   git commit -m "Add your feature"
+   ```
+4. Push to your branch:
+   ```bash
+   git push origin feature/your-feature
+   ```
+5. Open a pull request describing your changes.
 
-Prototype — internal use.
+---
+
+## Contact
+- **GitHub:** [DCode-v05](https://github.com/DCode-v05)
+- **Email:** denistanb05@gmail.com

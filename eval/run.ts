@@ -154,7 +154,7 @@ async function main(): Promise<void> {
   let n = 0;
   const overallStart = Date.now();
 
-  console.log(`\n=== Mini-BAP cost-efficiency sweep ===`);
+  console.log(`\n=== Skillet cost-efficiency sweep ===`);
   console.log(`Combos: ${COMBOS.length} · Prompts: ${PROMPTS.length} · Trials: ${TRIALS}`);
   console.log(`Total calls: ${total} · Output dir: ${OUTPUT_DIR}`);
   console.log(`Pass threshold: ${PASS_THRESHOLD * 100}% of structural checks\n`);
